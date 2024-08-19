@@ -26,9 +26,9 @@ app.post('/api/getethbalance' , httpGetEthereumBalance)
 console.log(process.env.NODE_ENV)
 
 if(process.env.NODE_ENV === 'production'){
-    app.use(express.static(path.join(__dirname , '..' , 'public')))
+    app.use(express.static(path.join(__dirname  , 'public')))
     app.use('/*' , (req , res) => {
-        return res.sendFile(path.join(__dirname ,'..', 'public' , 'index.html'))
+        return res.sendFile(path.join(__dirname , 'public' , 'index.html'))
     })
 }
 

@@ -18,9 +18,9 @@ app.post('/api/getsolbalance', controllers_1.httpGetSolanaBalance);
 app.post('/api/getethbalance', controllers_1.httpGetEthereumBalance);
 console.log(process.env.NODE_ENV);
 if (process.env.NODE_ENV === 'production') {
-    app.use(express_1.default.static(path_1.default.join(__dirname, '..', 'public')));
+    app.use(express_1.default.static(path_1.default.join(__dirname, 'public')));
     app.use('/*', (req, res) => {
-        return res.sendFile(path_1.default.join(__dirname, '..', 'public', 'index.html'));
+        return res.sendFile(path_1.default.join(__dirname, 'public', 'index.html'));
     });
 }
 app.listen(PORT, () => {
