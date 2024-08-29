@@ -2,10 +2,11 @@ import { Request , Response } from "express"
 import { generateMnemonic, mnemonicToSeedSync } from "bip39"
 import bs58 from "bs58"
 import { derivePath } from "ed25519-hd-key"
-import { Keypair } from "@solana/web3.js"
+import { Connection, Keypair , LAMPORTS_PER_SOL, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js"
 import nacl from "tweetnacl"
 import { ethers, HDNodeWallet, Wallet, parseEther, formatEther } from "ethers"
 import axios from "axios"
+import { solanaDevnet, solanaDevnetConnection } from "."
 
 const httpGenerateMnemonicPhrase = (req:Request , res:Response) => {
     const mnemonic = generateMnemonic()
@@ -59,22 +60,22 @@ const httpGenerateEtheriumKeypair = (req: Request , res:Response) => {
 
 const httpGetSolanaBalance = async (req: Request , res: Response) => {
     const {publickey} = req.body
-    const response = await axios.post("https://solana-mainnet.g.alchemy.com/v2/42KkGIbztI2javG6kfsiiPC5547UMGlf" , {
+    const response = await axios.post(solanaDevnet , {
         "jsonrpc": "2.0",
         "id": 1,
         "method": "getBalance",
         "params": [`${publickey}`]
     })
-
+    
     return res.send({
-        balance: response.data.result.value/1_000_000_000
+        balance: parseFloat(response.data.result.value)/LAMPORTS_PER_SOL
     }).status(200)
 }
 
 const httpGetEthereumBalance = async (req: Request , res:Response) => {
     const { publickey } = req.body
 
-    const response = await axios.post("https://eth-mainnet.g.alchemy.com/v2/42KkGIbztI2javG6kfsiiPC5547UMGlf" , {
+    const response = await axios.post("https://eth-sepolia.g.alchemy.com/v2/42KkGIbztI2javG6kfsiiPC5547UMGlf" , {
         "jsonrpc": "2.0",
         "id": 1,
         "method": "eth_getBalance",
@@ -87,11 +88,47 @@ const httpGetEthereumBalance = async (req: Request , res:Response) => {
     })
 }
 
+const httpSendSolana = async (req: Request , res: Response) => {
+    const { toPublicKey , fromPublicKey , fromPrivateKey , sol} = req.body
+    try {
+        const connection = new Connection('https://api.devnet.solana.com/', 'confirmed')
+        const sender = Keypair.fromSecretKey(bs58.decode(fromPrivateKey))
+        const toPubKey = new PublicKey(toPublicKey)
+
+        const transaction = new Transaction().add(
+            SystemProgram.transfer({
+                fromPubkey: sender.publicKey,
+                toPubkey: toPubKey,
+                lamports: sol * LAMPORTS_PER_SOL
+            })
+        )
+
+        const { blockhash } = await connection.getLatestBlockhash('finalized')
+        transaction.recentBlockhash = blockhash
+        transaction.feePayer = sender.publicKey
+        transaction.sign(sender)
+
+        const signature = await sendAndConfirmTransaction(connection, transaction, [sender], {
+            skipPreflight: false,
+            commitment: 'confirmed',
+            preflightCommitment: 'confirmed',
+        })
+
+        res.status(200).send({ signature })
+    } catch (err) {
+        console.error(err)
+        res.status(500).send('Internal Server Error')
+    }
+
+
+}
+
 export {
     httpGenerateMnemonicPhrase,
     httpGetSeedPhrase,
     httpGenerateSolanaKeypair,
     httpGenerateEtheriumKeypair,
     httpGetSolanaBalance,
-    httpGetEthereumBalance
+    httpGetEthereumBalance,
+    httpSendSolana
 }
