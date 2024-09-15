@@ -11,6 +11,10 @@ import {
 
 import { wallet } from "@/atoms"
 import axios from "axios"
+import { DialogTrigger } from "@radix-ui/react-dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
+import { Input } from "./ui/input"
+import { Label } from "./ui/label"
 const Dashboard = () => {
     const [solWallets, setSolWallets] = useRecoilState(solWALLETS)
     const [ethWallets, setEthWallets] = useRecoilState(ethWALLETS)
@@ -22,6 +26,25 @@ const Dashboard = () => {
     const [selectedNetwork , setSelectedNetwork] = useState<string>("")
     const [balance , setBalance] = useState<number>(0)
 
+    const [modalPublicKey , setModalPublicKey] = useState<string>("");
+    const [modalAmount , setModalAmount] = useState<string>("0");
+
+    const handleSendMoney = async () => {
+        if(!Number(modalAmount)){
+            console.log('Number not defined')
+            return;
+        }
+        if(selectedNetwork === 'sol'){
+            await axios.post('/api/sendsol' , {
+                toPublicKey: modalPublicKey,
+                fromPublicKey: selectedWallet.publickey,
+                fromPrivateKey: selectedWallet.secret,
+                sol: modalAmount
+            })
+        }
+        setModalPublicKey("");
+        setModalAmount("0")
+    }
     const getWallets = () => {
         const localSolWallets = localStorage.getItem("solanaWallets")
         const localEthWallets = localStorage.getItem("ethereumWallets")
@@ -132,9 +155,29 @@ const Dashboard = () => {
                 <Button onClick={() => getEthereumWallet()}>+Add more</Button>
             </div>
             </div>
-            <div className="balance flex">
-                <h1 className="text-6xl">{`${balance}`}</h1>
-                <h3>{selectedNetwork==='sol'? 'sol' : 'eth'}</h3>
+            <div className="balance flex justify-between">
+                <div className="flex">
+                    <h1 className="text-6xl">{`${balance}`}</h1>
+                    <h3>{selectedNetwork==='sol'? 'sol' : 'eth'}</h3>
+                </div>
+                <Dialog>
+                    <DialogTrigger><Button variant='secondary'>Send</Button></DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle className="text-3xl">Send {selectedNetwork==='sol'? 'Solana' : 'Ethereum'}</DialogTitle>
+                        </DialogHeader>
+                        <div>
+                            <Label className="text-xl">To public key</Label>
+                            <Input type="text" className="my-3" value={modalPublicKey} onChange={(e) => setModalPublicKey(e.target.value)}></Input>
+                        </div>
+                        <div>
+                            <Label className="text-xl">{selectedNetwork==='sol'? 'Solana' : 'Ethereum'}</Label>
+                            <Input className="my-3" value={modalAmount} onChange={(e) => setModalAmount(e.target.value)}></Input>
+                        </div>
+
+                        <Button onClick={handleSendMoney}>Send</Button>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             <div className="keys my-10">
