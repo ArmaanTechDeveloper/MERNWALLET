@@ -4,7 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev --prefix client\" \"npm run dev --prefix server\""
+    "dev": "concurrently \"npm run dev --prefix client\" \"npm run dev --prefix server\"",
+    "install-packages":"npm install --prefix client && npm install --prefix server",
+    "build-client": "npm run build --prefix client",
+    "build-server": "npm run build --prefix server",
+    "build": "npm run build-client && npm run build-server",
+    "start-prod": "npm run start --prefix server"
+
   },
   "keywords": [],
   "author": "",

@@ -2,6 +2,8 @@ import path from "path"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 
+const url = process.env.SERVER_URL? process.env.SERVER_URL : 'http://localhost:3000'
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -11,7 +13,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': 'http://localhost:3000'
+      '/api': `${url}`
     }
+  },
+  build: {
+    outDir: '../server/public'
   }
 })

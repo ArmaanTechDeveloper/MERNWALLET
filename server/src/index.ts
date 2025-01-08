@@ -14,7 +14,7 @@ import 'dotenv/config'
 import { Connection } from '@solana/web3.js';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT? process.env.PORT : 3000;
 export const solanaDevnet = "https://solana-devnet.g.alchemy.com/v2/42KkGIbztI2javG6kfsiiPC5547UMGlf"
 export const solanaDevnetConnection = new Connection(solanaDevnet , 'confirmed')
 
@@ -31,9 +31,9 @@ app.post('/api/sendsol' , httpSendSolana)
 console.log(process.env.NODE_ENV)
 
 if(process.env.NODE_ENV === 'production'){
-    app.use(express.static(path.join(__dirname  , 'dist')))
+    app.use(express.static(path.join(__dirname  , '..', 'public')))
     app.use('/*' , (req , res) => {
-        return res.sendFile(path.join(__dirname , 'dist' , 'index.html'))
+        return res.sendFile(path.join(__dirname , '..', 'public' , 'index.html'))
     })
 }
 
