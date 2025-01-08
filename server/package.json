@@ -27,6 +27,7 @@
     "ethers": "^6.13.2",
     "express": "^4.19.2",
     "punycode": "^2.3.1",
+    "tsc": "^2.0.4",
     "tweetnacl": "^1.0.3",
     "week-2-wallet": "file:.."
   }
