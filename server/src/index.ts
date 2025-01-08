@@ -28,9 +28,9 @@ app.post('/api/getsolbalance', httpGetSolanaBalance)
 app.post('/api/getethbalance' , httpGetEthereumBalance)
 app.post('/api/sendsol' , httpSendSolana)
 
-console.log(process.env.NODE_ENV)
+console.log(process.env.ENVIRONMENT)
 
-if(process.env.NODE_ENV === 'production'){
+if(process.env.ENVIRONMENT === 'production'){
     app.use(express.static(path.join(__dirname  , '..', 'public')))
     app.use('/*' , (req , res) => {
         return res.sendFile(path.join(__dirname , '..', 'public' , 'index.html'))
